@@ -623,7 +623,7 @@ Reglas:
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 300,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -704,9 +704,9 @@ async function confirmarGasto() {
   }
 
   try {
-    const res = await fetch(cfg.scriptUrl, {
-      method: 'POST',
-      body: JSON.stringify(entry)
+    const encoded = encodeURIComponent(JSON.stringify(entry));
+    const res = await fetch(cfg.scriptUrl + '?data=' + encoded, {
+      method: 'GET',
     });
     const result = await res.json();
     if (result.success) {
