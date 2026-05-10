@@ -366,6 +366,10 @@
       <label>Google Apps Script URL</label>
       <input id="cfg-script-url" type="text" placeholder="https://script.google.com/macros/s/…/exec">
     </div>
+    <div class="config-row">
+      <label>Anthropic API Key</label>
+      <input id="cfg-api-key" type="password" placeholder="sk-ant-…">
+    </div>
     <button class="save-config-btn" onclick="saveConfig()">Guardar configuración</button>
     <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);line-height:1.6;">
       ⚙️ Necesitas crear un Google Apps Script para conectar esta app a tu sheet.<br>
@@ -520,6 +524,7 @@ function loadConfig() {
     sheetId:   localStorage.getItem('cfg_sheetId')   || '1QAhLTr5IrXj2lqdcwwlE1Feum06djE4E',
     sheetName: localStorage.getItem('cfg_sheetName') || '📝 Gastos',
     scriptUrl: localStorage.getItem('cfg_scriptUrl') || '',
+    apiKey:    localStorage.getItem('cfg_apiKey')    || '',
   };
 }
 
@@ -527,6 +532,7 @@ function saveConfig() {
   localStorage.setItem('cfg_sheetId',   document.getElementById('cfg-sheet-id').value.trim());
   localStorage.setItem('cfg_sheetName', document.getElementById('cfg-sheet-name').value.trim());
   localStorage.setItem('cfg_scriptUrl', document.getElementById('cfg-script-url').value.trim());
+  localStorage.setItem('cfg_apiKey',    document.getElementById('cfg-api-key').value.trim());
   toast('✓ Configuración guardada', 'success');
 }
 
@@ -535,6 +541,7 @@ function initConfig() {
   document.getElementById('cfg-sheet-id').value   = cfg.sheetId;
   document.getElementById('cfg-sheet-name').value = cfg.sheetName;
   document.getElementById('cfg-script-url').value = cfg.scriptUrl;
+  document.getElementById('cfg-api-key').value    = cfg.apiKey;
 }
 
 // ── UI helpers ─────────────────────────────────────────────────────────────
@@ -608,9 +615,19 @@ Reglas:
 - Si no especifica cuenta → BCP
 - Infiere la categoría según el contexto (taxi/uber/bus → Transporte, restaurante/comida → Alimentación, etc.)`;
 
+    const cfg2 = loadConfig();
+    if (!cfg2.apiKey) {
+      toast('⚠️ Falta tu API key en configuración', 'error');
+      setLoading(false); return;
+    }
     const res = await fetch(ANTHROPIC_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': cfg2.apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 300,
