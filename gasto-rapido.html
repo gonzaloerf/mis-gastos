@@ -590,30 +590,24 @@ async function parseGasto() {
   setLoading(true);
   try {
     const today = new Date().toISOString().split('T')[0];
-    const prompt = `Eres un asistente que analiza descripciones de gastos en soles peruanos.
-El usuario escribe en lenguaje natural. Extrae la información y responde SOLO con JSON válido, sin texto adicional.
+    const prompt = `Eres un asistente que analiza descripciones de gastos en soles peruanos. El usuario escribe en lenguaje natural. Extrae la información y responde SOLO con JSON válido, sin markdown ni texto adicional.
 
-Texto del usuario: "${text}"
-Fecha de hoy: ${today}
+Texto: "${text}"
 
-Responde con este JSON exacto:
-{
-  "descripcion": "nombre del gasto/comercio limpio",
-  "monto": 0.00,
-  "categoria": "una de: Alimentación|Transporte|Vivienda|Salud|Educación|Entretenimiento|Ropa y calzado|Servicios (luz/agua/internet)|Ahorros|Otros",
-  "tipo": "Gasto o Ingreso",
-  "cuenta": "BCP|BBVA|Interbank|Scotiabank|Efectivo|Yape / Plin|Otro",
-  "notas": "cualquier detalle extra o cadena vacía"
-}
+EXTRAE el número del texto como monto. Ejemplos:
+- "Cafe Starbucks 20 soles" → monto 20
+- "Taxi 18" → monto 18
+- "Almuerzo 35.50" → monto 35.50
+
+Responde ÚNICAMENTE este JSON con los valores reales (no copies los ejemplos):
+{"descripcion":"nombre limpio","monto":NUMERO_DEL_TEXTO,"categoria":"Alimentación","tipo":"Gasto","cuenta":"Efectivo","notas":""}
 
 Reglas:
-- Si no hay monto claro, pon 0
-- Si menciona sueldo/salario/ingreso/depósito → tipo Ingreso
-- Si menciona BCP/BBVA/Interbank/Scotiabank → esa cuenta
-- Si menciona Yape/Plin → Yape / Plin
-- Si menciona efectivo/cash → Efectivo
-- Si no especifica cuenta → BCP
-- Infiere la categoría según el contexto (taxi/uber/bus → Transporte, restaurante/comida → Alimentación, etc.)`;
+- monto: extrae SIEMPRE el número del texto. Si no hay número, pon 0
+- categoria: Alimentación, Transporte, Vivienda, Salud, Educación, Entretenimiento, Ropa y calzado, Servicios (luz/agua/internet), Ahorros, u Otros
+- tipo: Ingreso si menciona sueldo/salario/ingreso, si no Gasto
+- cuenta: BCP, BBVA, Interbank, Scotiabank, Efectivo, o Yape / Plin. Si no especifica → Efectivo
+- cafe/restaurant/comida→Alimentación, taxi/uber/bus→Transporte, farmacia→Salud`;
 
     const cfg2 = loadConfig();
     if (!cfg2.apiKey) {
